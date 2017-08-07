@@ -1,72 +1,87 @@
 /**
- * Created by Administrator on 2017/2/13.
+ * Created by Administrator on 2017/5/14.
  */
-$(function(){
-    /*
-     全局的变量
-    */
-    var index = 0, timer = null;
+$(function () {
+     /*
+        1. 根据尺寸更改图片的显示方式
+      */
+     $(window).on('resize', changeImgStyle);
+     function changeImgStyle() {
+         // 1.1 获取当前窗口的宽度
+         var clientW = $(window).width();
+         // console.log(clientW);
 
-    shows(index);
-    /*
-      监听GPS的点击
-    */
-    $('.gps li').on('click', function(){
-        // 1.1 获取当前的索引
-        index = $(this).index();
+         // 1.2 大小图的显示
+         var isShowLgImg = clientW > 790;
 
-        // 1.2 实现切换
-        $(this).addClass('cur').siblings().removeClass('cur');
-        $('section').eq(index).show().siblings('section').hide();
+         // 1.3 获取所有的item
+         var $items = $('#wjs_banner .item');
 
-        // 1.3 控制
-        shows(index);
+         // 1.4 遍历
+         $items.each(function (index, value) {
+             // 1.4.1 获取节点元素
+             var $item = $(value);
 
-        //1.4 清除空降类
-        setTimeout(function(){
-            $('section').eq(index).removeClass('current').siblings('section').addClass('current');
-        }, 10);
-    });
+             // 1.4.2 获取属性
+             var attr = isShowLgImg ? $item.data('lg-img') : $item.data('sm-img');
 
-    /*
-      监听屏幕的滚动
-    */
-    $(window).mousewheel(function(event, d){
-         // 1. 求出滚动的屏的索引
-         clearTimeout(timer);
-         timer = setTimeout(function(){
-             index -= d;
-             if(index > $('.gps li').length -1){
-                 index = 0;
-             }else if(index < 0){
-                 index = $('.gps li').length -1;
+             var src = 'url(' + attr + ')';
+
+             $item.css({
+                backgroundImage: src
+             });
+
+             // 1.4.3 当屏幕小于790,创建img标签放入
+             if(!isShowLgImg){
+                 var $img = '<img src="' + attr +'">';
+                 // 先清空后添加
+                 $item.empty().append($img);
+             }else { // 屏幕大于 790
+                 $item.empty();
              }
 
-             // 2. 切换GPS和页面
-             $('.gps li').eq(index).addClass('cur').siblings().removeClass('cur');
-             $('section').eq(index).show().siblings('section').hide();
-
-             // 3. 控制
-             shows(index);
-
-             // 4. 清除空降类
-             setTimeout(function(){
-                 $('section').eq(index).removeClass('current').siblings('section').addClass('current');
-             }, 10);
-
-         }, 400);
-    });
-
-    /*
-     控制头部logo的显示和隐藏
-    */
-     function shows(num){
-         if(num == 0){ // 第一屏
-             $('#hd-logo').hide();
-             $('#scroll').show();
-         }else {
-             $('#hd-logo').show();
-             $('#scroll').hide();
-         }
+         });
      }
+
+
+     /*
+        2. 改变ul的尺寸
+     */
+     $(window).on('resize', changeUlWidth);
+     function changeUlWidth() {
+         // 1. 拿到ul
+         var $ul = $('#wjs_product .nav');
+
+         // 2. 拿到左边的所有的li标签
+         var $leftLis = $('li[role="presentation"]', $ul);
+
+         // 3. 求总宽度
+         var totalLiLength = 0;
+         $leftLis.each(function (index, item) {
+             totalLiLength += $(item).width();
+         });
+         // console.log(totalLiLength);
+
+         // 4. 求出父标签的宽度
+         var parentWidth = $ul.parent().width();
+
+         // 5. 判断
+         if(totalLiLength >= parentWidth){
+             $ul.css({
+                 width: totalLiLength
+             })
+         }else {
+             $ul.removeAttr('style');
+         }
+
+
+     }
+
+
+     /*
+      3. 初始化tip
+     */
+     $('[data-toggle="tooltip"]').tooltip();
+
+     $(window).trigger('resize');
 });
